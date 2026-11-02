@@ -144,6 +144,7 @@ quickshelf/
 10. **Auto-start:** **No.** Quickshelf must work right after install without any login-time setup.
 11. **Clean-room approach:** see section 8a.
 12. **Licence:** MIT. Applies to Quickshelf's own code. Any third-party dependency keeps its own licence.
+13. **Colour palette:** derived from the Apple Podcasts web player (https://podcasts.apple.com/us/), colours only, extracted with Playwright into `src/renderer/styles/token.css` (HSL). No layout, copy, icons, or code from that site.
 
 ## 8a. Clean-room approach (proposed)
 

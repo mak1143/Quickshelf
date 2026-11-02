@@ -1,6 +1,6 @@
-# Strictly Read This files
+# AGENTS.md — Quickshelf agent instructions
 
-This file tells any AI coding agent how to work in this project. Read it before you change anything.
+Read this file before you change anything. If it disagrees with `plan.md`, `plan.md` wins — tell the user about the conflict.
 
 ## 1. Project in one paragraph
 
@@ -16,14 +16,14 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 
 - `plan.md` is the full specification: scope, architecture, build phases, decisions, risks, and packaging.
 - `README.md` is the public-facing summary.
-- If this file and `plan.md` disagree, `plan.md` wins. Tell the user about the conflict instead of guessing.
 
 ## 3. Current status
 
-**Planning phase. No application code exists yet.**
+**Planning phase. No application code exists yet.** The repo holds docs (`plan.md`, `README.md`, `AGENTS.md`) plus one design file, `src/renderer/styles/token.css`. There is no `package.json`, no build config, and no runnable command.
 
-- Do not create source code, `package.json`, build config, or scaffolding until the user explicitly says to start phase 1.
-- Documentation changes (`plan.md`, `README.md`, `agent.md`) are allowed when the user asks for them.
+- Do not create source code, `package.json`, or scaffolding until the user explicitly says to start phase 1. Exception: the user may ask for individual design files (like `token.css`) before phase 1 — create only what was asked for, nothing else.
+- Documentation changes (`plan.md`, `README.md`, `AGENTS.md`) are allowed when the user asks for them.
+- `.github/` (PR template, future CI) is tracked. `.gitignore` has no Node entries yet — add `node_modules/` and `dist/` before the first commit that includes them.
 - Config snippets in docs (Hyprland `bind` and `windowrule`) are examples, not files to create.
 
 ## 4. Confirmed decisions (do not change without asking)
@@ -43,13 +43,15 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 | Packaging (first) | AppImage. Later: Arch/Garuda `PKGBUILD`, then `.deb`, Windows `.exe`, macOS `.dmg`                             |
 | Updates (v1)      | Manual download of the AppImage                                                                                |
 | Licence           | MIT for Quickshelf's own code. Third-party dependencies keep their own licences                                |
+| UI colour reference | Apple Podcasts web player (https://podcasts.apple.com/us/). Colours only, extracted with Playwright into `token.css`. No layout, copy, icons, or code from Apple. |
 
 ## 5. Stack rules
 
 - **Electron:** latest stable. Use the main process for OS work and window control.
 - **Security:** `contextIsolation: true`, `nodeIntegration: false`. Expose only a small API through `contextBridge` in the preload script.
 - **UI:** plain HTML and ES modules. No frontend framework unless the user asks.
-- **Styling:** Tailwind CSS v4 for layout. Colours, radii, spacing, and type live in `token.css` as CSS custom properties. Do not hard-code colours in components.
+- **Styling:** Tailwind CSS v4 for layout. Colours, radii, spacing, and type live in `token.css` as CSS custom properties, written in HSL. Do not hard-code colours in components.
+- **Palette:** derived from the Apple Podcasts web player (see §4). Do not invent hex/HSL values: extend `token.css`, or re-extract from the live site with Playwright (`browser_emulate_media` for light/dark, then read root custom properties such as `--pageBG`, `--systemPrimary`, `--systemSecondary`, `--labelDivider`, `--keyColor`, `--systemLink`, `--systemGray6`).
 - **Themes:** light and dark, via `prefers-color-scheme` and a `data-theme` attribute.
 - **Storage:** JSON files in `app.getPath('userData')`. Do not add a database unless the plan is changed.
 - **Packaging:** electron-builder for AppImage. Pin dependency versions in `package.json`.
@@ -82,7 +84,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 
 ## 9. Phase order
 
-1. Scaffold: Electron, Tailwind, Basecoat, `token.css`, frameless window, single-instance toggle, Hyprland rule.
+1. Scaffold: Electron, Tailwind, Basecoat, `token.css` (palette already exists — extend it, do not recreate), frameless window, single-instance toggle, Hyprland rule.
 2. Shelf: drop, list, drag out, tabs, persistence.
 3. Clipboard: polling watcher, history, search, pin, copy back.
 4. Todo: create, edit, delete, reorder, due dates, priorities, "Today" filter.

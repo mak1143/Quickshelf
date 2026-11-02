@@ -1,0 +1,117 @@
+/* Quickshelf design tokens — colours only.
+ *
+ * Palette extracted from the Apple Podcasts web player
+ * (https://podcasts.apple.com/us/) with Playwright on 2026-11-02.
+ * Values converted from the site's hex tokens to HSL; light is the default.
+ * Colours only — no layout, copy, icons, or code from that site.
+ *
+ * Dark mode: follows prefers-color-scheme, overridable with
+ * <html data-theme="light"> or <html data-theme="dark">.
+ * Never hard-code colours in components — add or change them here.
+ */
+
+:root {
+  /* Surfaces */
+  --color-bg: hsl(0 0% 100%); /* pageBG */
+  --color-bg-elevated: hsl(240 24% 96%); /* systemGray6 / opaqueShelfBG */
+  --color-fill: hsl(0 0% 0% / 5%); /* systemQuinary / shelfBG */
+  --color-fill-strong: hsl(0 0% 0% / 10%); /* systemQuaternary */
+  --color-segment-bg: hsl(240 4% 48% / 12%); /* segmentedControlBG */
+
+  /* Text */
+  --color-text: hsl(0 0% 0% / 88%); /* systemPrimary */
+  --color-text-secondary: hsl(0 0% 0% / 56%); /* systemSecondary */
+  --color-text-tertiary: hsl(0 0% 0% / 48%); /* systemTertiary */
+
+  /* Lines */
+  --color-divider: hsl(0 0% 0% / 15%); /* labelDivider */
+  --color-hairline: 0.5px solid hsl(0 0% 0% / 15%); /* keyline-border-style */
+
+  /* Accent */
+  --color-accent: hsl(266 71% 49%); /* keyColor */
+  --color-accent-pressed: hsl(266 97% 36%); /* keyColor-pressed */
+  --color-accent-rollover: hsl(264 100% 33%); /* keyColor-rollover */
+  --color-link: hsl(211 100% 43%); /* systemLink */
+  --color-blue: hsl(211 100% 50%); /* systemBlue */
+  --color-selection: hsl(266 71% 44%); /* selectionColor */
+
+  /* Status */
+  --color-danger: hsl(3 100% 59%); /* systemRed */
+  --color-warning: hsl(35 100% 50%); /* systemOrange */
+  --color-success: hsl(129 67% 48%); /* systemGreen */
+
+  /* Greys (light: systemGray 1–6) */
+  --gray-1: hsl(240 2% 57%);
+  --gray-2: hsl(240 3% 69%);
+  --gray-3: hsl(240 5% 79%);
+  --gray-4: hsl(240 6% 83%);
+  --gray-5: hsl(240 11% 91%);
+  --gray-6: hsl(240 24% 96%);
+
+  --color-scrim: hsl(0 0% 0% / 45%); /* modalScrimColor */
+
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Icons",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Dark: system preference, unless the user forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: hsl(0 0% 12%); /* pageBG */
+    --color-bg-elevated: hsl(240 3% 11%); /* systemGray6 */
+    --color-fill: hsl(0 0% 100% / 5%);
+    --color-fill-strong: hsl(0 0% 100% / 10%);
+    --color-segment-bg: hsl(240 4% 48% / 24%);
+
+    --color-text: hsl(0 0% 100% / 92%); /* systemPrimary */
+    --color-text-secondary: hsl(0 0% 100% / 64%); /* systemSecondary */
+    --color-text-tertiary: hsl(0 0% 100% / 40%); /* systemTertiary */
+
+    --color-divider: hsl(0 0% 100% / 10%); /* labelDivider */
+    --color-hairline: 0.5px solid hsl(0 0% 100% / 10%);
+
+    --color-accent: hsl(266 85% 65%); /* keyColor */
+    --color-accent-pressed: hsl(273 100% 77%);
+    --color-accent-rollover: hsl(273 100% 77%);
+    --color-link: hsl(211 100% 63%); /* systemLink */
+    --color-blue: hsl(210 100% 52%); /* systemBlue */
+    --color-selection: hsl(266 71% 38%); /* selectionColor */
+
+    --gray-1: hsl(240 2% 61%);
+    --gray-2: hsl(240 1% 39%);
+    --gray-3: hsl(240 1% 29%);
+    --gray-4: hsl(240 2% 23%);
+    --gray-5: hsl(240 2% 18%);
+    --gray-6: hsl(240 3% 11%);
+  }
+}
+
+/* Dark: explicit data-theme="dark" wins over the media query. */
+:root[data-theme="dark"] {
+  --color-bg: hsl(0 0% 12%);
+  --color-bg-elevated: hsl(240 3% 11%);
+  --color-fill: hsl(0 0% 100% / 5%);
+  --color-fill-strong: hsl(0 0% 100% / 10%);
+  --color-segment-bg: hsl(240 4% 48% / 24%);
+
+  --color-text: hsl(0 0% 100% / 92%);
+  --color-text-secondary: hsl(0 0% 100% / 64%);
+  --color-text-tertiary: hsl(0 0% 100% / 40%);
+
+  --color-divider: hsl(0 0% 100% / 10%);
+  --color-hairline: 0.5px solid hsl(0 0% 100% / 10%);
+
+  --color-accent: hsl(266 85% 65%);
+  --color-accent-pressed: hsl(273 100% 77%);
+  --color-accent-rollover: hsl(273 100% 77%);
+  --color-link: hsl(211 100% 63%);
+  --color-blue: hsl(210 100% 52%);
+  --color-selection: hsl(266 71% 38%);
+
+  --gray-1: hsl(240 2% 61%);
+  --gray-2: hsl(240 1% 39%);
+  --gray-3: hsl(240 1% 29%);
+  --gray-4: hsl(240 2% 23%);
+  --gray-5: hsl(240 2% 18%);
+  --gray-6: hsl(240 3% 11%);
+}
