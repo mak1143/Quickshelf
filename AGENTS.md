@@ -76,6 +76,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 8. **Do not commit or publish** anything unless the user asks.
 9. **Do not disable security settings** (context isolation, sandboxing) to make something work. Find another approach and explain it.
 10. **Record decisions.** If the user answers an open question, update `plan.md` section 8 and this file's table in section 4.
+11. **Branch for features.** From now on, every new feature gets its own branch off `main` (e.g. `feat/shelf`, `feat/clipboard`, `fix/drag-out`). Do not build features directly on `main`; merge back via PR using the PR template.
 
 ## 8. Open items (to confirm with the user)
 
