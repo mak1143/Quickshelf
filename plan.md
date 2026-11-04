@@ -90,30 +90,41 @@ quickshelf/
 
 ## 4. Hyprland integration (Linux)
 
+Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland generates an example file if none exists). The older `hyprland.conf` / `windowrule = ...` format is not used here. Verified against the 0.57 wiki on 2026-11-04.
+
 - Launch Electron with Wayland flags: `--ozone-platform=wayland --enable-features=WaylandWindowDecorations`.
+- Set the window class from the main process with `--class=quickshelf` so Hyprland can match it.
 - Single instance: `app.requestSingleInstanceLock()`. A second launch with `--toggle` sends a message to the running instance, which shows or hides the window. This is what the keybinding calls.
-- Example keybinding (add to `hyprland.conf`):
+- Keybinding (add to `hyprland.lua`):
+  ```lua
+  hl.bind("SUPER + A", hl.dsp.exec_cmd("quickshelf --toggle"))
   ```
-  bind = SUPER, A, exec, quickshelf --toggle
+- Window rules so the window floats, stays pinned across workspaces, and opens at the default size:
+  ```lua
+  hl.window_rule({
+    match = { class = "quickshelf" },
+    float = true,
+    pin = true,
+    center = true,
+    size = { 360, 640 },
+  })
   ```
-- Example window rules so the window floats, stays on all workspaces, and stays on top. The Hyprland 0.57 windowrule syntax changed across versions, so check the wiki before applying:
+- `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour. It does **not** raise the window above other windows: Wayland has no always-on-top for ordinary toplevels, so Electron's `alwaysOnTop` is effectively a no-op here. Review `stay_focused` only if stronger behaviour turns out to be necessary.
+- Verify the class actually matches before assuming the rule works:
   ```
-  windowrule = float, class:^(quickshelf)$
-  windowrule = pin, class:^(quickshelf)$
-  windowrule = size 360 640, class:^(quickshelf)$
+  hyprctl clients -j | jq '.[] | select(.class == "quickshelf")'
   ```
-- `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour.
 - A `hyprctl` fallback can position the window if needed.
 
 ## 5. Cross-platform notes
 
-- **Windows / macOS:** use `globalShortcut` for the toggle and `app.setLoginItemSettings` for auto-start. Tray icon on all platforms.
+- **Windows / macOS:** use `globalShortcut` for the toggle. Tray icon on all platforms. Quickshelf never registers a login item (section 8, decision 10).
 - **Linux:** the keybinding comes from Hyprland, not Electron. The tray may need `libappindicator` depending on the desktop.
 - Keep all OS-specific code behind `process.platform` checks in the main process only.
 
 ## 6. Build phases
 
-1. **Scaffold** — Electron + Vite (or plain esbuild), Tailwind, Basecoat, `token.css`, empty frameless window, single-instance toggle, Hyprland rule.
+1. **Scaffold** — Electron + esbuild + Tailwind CLI, Basecoat, `token.css`, empty frameless window, single-instance toggle, Hyprland rule.
 2. **Shelf** — drop in, list, drag out, tabs, persistence.
 3. **Clipboard** — polling watcher, history list, search, pin, copy back.
 4. **Todo** — CRUD, reorder, persistence.
@@ -129,6 +140,7 @@ quickshelf/
 | Global shortcuts blocked on Wayland         | Keybinding must come from Hyprland    | Already the plan (single-instance `--toggle`)                     |
 | Clipboard polling captures secrets          | Privacy                               | Ignore list, auto-expire, and a "pause history" toggle            |
 | Basecoat/Tailwind version drift             | Broken styles                         | Pin versions in `package.json`                                    |
+| No always-on-top on Wayland                 | Window can be covered by other apps   | Ship `float` + `pin`; review `stay_focused`; document the limit   |
 
 ## 8. Decisions
 
@@ -145,6 +157,11 @@ quickshelf/
 11. **Clean-room approach:** see section 8a.
 12. **Licence:** MIT. Applies to Quickshelf's own code. Any third-party dependency keeps its own licence.
 13. **Colour palette:** derived from the Apple Podcasts web player (https://podcasts.apple.com/us/), colours only, extracted with Playwright into `src/renderer/styles/token.css` (HSL). No layout, copy, icons, or code from that site.
+14. **Renderer build:** esbuild bundles the renderer JavaScript to one IIFE; the Tailwind CSS v4 CLI generates the stylesheet. No Vite, no frontend framework.
+15. **Quit:** phase 1 adds `quickshelf --quit` and `Ctrl+Q` in the window. Closing the window hides it; it does not quit.
+16. **Hyprland config format:** Lua at `~/.config/hypr/hyprland.lua`, confirmed against the Hyprland 0.57 wiki on 2026-11-04.
+17. **Package manager:** npm, with exact dependency versions pinned in `package.json`.
+18. **Launch behaviour:** plain `quickshelf` and `quickshelf --toggle` show the window; `quickshelf --hide` starts hidden; `quickshelf --quit` exits.
 
 ## 8a. Clean-room approach (proposed)
 

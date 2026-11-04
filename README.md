@@ -29,10 +29,12 @@ Running `quickshelf` while it is already open shows the window instead of starti
 
 ## Hyprland setup (planned)
 
-Add these lines to `~/.config/hypr/hyprland.conf`. Check the Hyprland 0.57 wiki for the exact `windowrule` syntax before applying.
+Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`, which uses Lua. The older `hyprland.conf` / `windowrule` syntax is not used. Add two things to that file:
 
-- A `bind` for `SUPER+A` that runs `quickshelf --toggle`
-- Window rules that float the window, pin it across workspaces, and set its default size
+- a `hl.bind` for `SUPER + A` that runs `quickshelf --toggle`
+- a `hl.window_rule` that floats and pins the window, and sets its default size
+
+See [plan.md](plan.md) section 4 for the exact snippet. Note that Wayland does not support true always-on-top for ordinary windows: `pin` keeps Quickshelf on every workspace, but other windows can still cover it.
 
 ## Installation (planned)
 
@@ -55,4 +57,4 @@ Add these lines to `~/.config/hypr/hyprland.conf`. Check the Hyprland 0.57 wiki 
 
 ## Licence
 
-MIT. See the `LICENSE` file once the project is creates.
+MIT. See the [LICENSE](LICENSE) file.

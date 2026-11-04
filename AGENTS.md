@@ -44,12 +44,16 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 | Updates (v1)      | Manual download of the AppImage                                                                                |
 | Licence           | MIT for Quickshelf's own code. Third-party dependencies keep their own licences                                |
 | UI colour reference | Apple Podcasts web player (https://podcasts.apple.com/us/). Colours only, extracted with Playwright into `token.css`. No layout, copy, icons, or code from Apple. |
+| Renderer build    | esbuild bundles the renderer JS to one IIFE. Tailwind CSS v4 CLI builds the stylesheet. No Vite.                |
+| Quit              | `quickshelf --quit` and `Ctrl+Q`. Closing the window hides it.                                                 |
+| Hyprland config   | Lua at `~/.config/hypr/hyprland.lua` (0.57). Not `hyprland.conf`, not `windowrule = ...`.                      |
+| Package manager   | npm. Exact dependency versions pinned in `package.json`.                                                       |
 
 ## 5. Stack rules
 
 - **Electron:** latest stable. Use the main process for OS work and window control.
 - **Security:** `contextIsolation: true`, `nodeIntegration: false`. Expose only a small API through `contextBridge` in the preload script.
-- **UI:** plain HTML and ES modules. No frontend framework unless the user asks.
+- **UI:** plain HTML. Renderer JavaScript is written as ES modules and bundled by esbuild into one IIFE (Chromium blocks module scripts over `file://`). No frontend framework unless the user asks.
 - **Styling:** Tailwind CSS v4 for layout. Colours, radii, spacing, and type live in `token.css` as CSS custom properties, written in HSL. Do not hard-code colours in components.
 - **Palette:** derived from the Apple Podcasts web player (see §4). Do not invent hex/HSL values: extend `token.css`, or re-extract from the live site with Playwright (`browser_emulate_media` for light/dark, then read root custom properties such as `--pageBG`, `--systemPrimary`, `--systemSecondary`, `--labelDivider`, `--keyColor`, `--systemLink`, `--systemGray6`).
 - **Themes:** light and dark, via `prefers-color-scheme` and a `data-theme` attribute.
@@ -62,7 +66,8 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 - Keep the app single-instance (`app.requestSingleInstanceLock()`). Running `quickshelf --toggle` when the app is already open must show or hide the window, never start a second copy.
 - Do not rely on global keyboard hooks or mouse hooks. Wayland blocks most of them. The keybinding comes from Hyprland.
 - Do not implement "shake to open". It was dropped because it is not reliable on Wayland.
-- Window behaviour needs floating, pinning across workspaces, and a default size. These come from Hyprland `windowrule` lines, which must be checked against the Hyprland 0.57 wiki before being written down.
+- Window behaviour comes from Hyprland rules in `~/.config/hypr/hyprland.lua` (Lua, not `hyprland.conf`): `hl.window_rule({ ... })` with `float`, `pin`, and `size`. Check the 0.57 wiki before changing them.
+- Wayland has no true always-on-top for ordinary toplevels. `pin` keeps the window on every workspace; it does not raise it above other windows. Do not promise always-on-top.
 
 ## 7. Working rules for agents
 
@@ -82,6 +87,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 
 - Shortcut: `SUPER+A` is confirmed, but it is a placeholder until the user tests it.
 - Packaging for the AUR package: optional, decide later.
+- Always-on-top on Wayland: not achievable for ordinary toplevels. Current behaviour is `float` + `pin`. Decide in phase 1 testing whether `stay_focused` is worth the focus-stealing trade-off.
 
 ## 9. Phase order
 
