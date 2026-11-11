@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "basecoat-css";
+@import "./token.css";
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-family);
+  }
+}
