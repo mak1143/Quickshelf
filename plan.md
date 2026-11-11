@@ -1,6 +1,6 @@
 # Quickshelf — Plan
 
-A small, cross-platform desktop "shelf + clipboard + todo" utility built with Electron, HTML, Tailwind, and Basecoat UI. It lives as a floating window that stays on top of your workspace and is summoned with a keybinding (Hyprland on Linux; global shortcut on Windows/macOS).
+A small, cross-platform desktop "shelf + clipboard + todo" utility built with Electron, HTML, Tailwind, and Basecoat UI. It lives as a floating window that stays pinned across workspaces (Wayland has no true always-on-top) and is summoned with a keybinding (Hyprland on Linux; global shortcut on Windows/macOS).
 
 ## 1. Reference: what PerchShelf does
 
@@ -42,7 +42,7 @@ What we will **not** copy: the branding, copy text, the Store-only distribution,
 
 ### 2.4 Window behaviour ("sticky")
 
-- Frameless, always-on-top, skip-taskbar, hidden by default.
+- Frameless, skip-taskbar, hidden by default. Floated and pinned across workspaces by Hyprland; no true always-on-top on Wayland.
 - Toggled by a keybinding, not by global hooks alone (Wayland blocks most global hooks).
 - Position remembered per monitor; can be docked to a screen edge.
 
@@ -54,7 +54,7 @@ What we will **not** copy: the branding, copy text, the Store-only distribution,
 | UI            | Plain HTML + JS (ES modules)            | No framework; keep it small                                                                                                              |
 | Styling       | Tailwind CSS v4                         | Utility classes for layout                                                                                                               |
 | Components    | Basecoat UI (`basecoat-css`)            | Verify package name/version before install                                                                                               |
-| Design tokens | `token.css`                             | Single source of CSS custom properties: colours, radii, spacing, type, shadows; light + dark via `prefers-color-scheme` and `data-theme` |
+| Design tokens | `token.css`                             | Single source of CSS custom properties. Colours exist now; radii, spacing, type, and shadows are added during phase 1. Light + dark via `prefers-color-scheme` and `data-theme` |
 | Storage       | JSON files in `app.getPath('userData')` | Via a tiny store module; move to SQLite only if needed                                                                                   |
 | Packaging     | electron-builder                        | AppImage + deb (Linux), NSIS (Windows), dmg (macOS)                                                                                      |
 
@@ -68,10 +68,10 @@ quickshelf/
 ├─ src/
 │  ├─ main/
 │  │  ├─ main.js            # window, tray, single-instance, IPC
-│  │  ├─ window.js          # frameless, always-on-top, toggle, position memory
+│  │  ├─ window.js          # frameless, toggle, position memory; float/pin via Hyprland
 │  │  ├─ clipboard-watch.js # clipboard polling + history
 │  │  ├─ store.js           # JSON persistence (shelf, todo, clipboard)
-│  │  └─ cli.js             # handles `quickshelf --toggle` / `quickshelf --show` / `quickshelf --hide`
+│  │  └─ cli.js             # handles `quickshelf --toggle` / `--show` / `--hide` / `--quit`
 │  ├─ preload/
 │  │  └─ preload.js         # contextBridge API (no nodeIntegration)
 │  └─ renderer/
@@ -90,30 +90,41 @@ quickshelf/
 
 ## 4. Hyprland integration (Linux)
 
+Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland generates an example file if none exists). The older `hyprland.conf` / `windowrule = ...` format is not used here. Verified against the 0.57 wiki on 2026-11-04.
+
 - Launch Electron with Wayland flags: `--ozone-platform=wayland --enable-features=WaylandWindowDecorations`.
+- Set the window class from the main process with `--class=quickshelf` so Hyprland can match it.
 - Single instance: `app.requestSingleInstanceLock()`. A second launch with `--toggle` sends a message to the running instance, which shows or hides the window. This is what the keybinding calls.
-- Example keybinding (add to `hyprland.conf`):
+- Keybinding (add to `hyprland.lua`):
+  ```lua
+  hl.bind("SUPER + A", hl.dsp.exec_cmd("quickshelf --toggle"))
   ```
-  bind = SUPER, A, exec, quickshelf --toggle
+- Window rules so the window floats, stays pinned across workspaces, and opens at the default size:
+  ```lua
+  hl.window_rule({
+    match = { class = "quickshelf" },
+    float = true,
+    pin = true,
+    center = true,
+    size = { 360, 640 },
+  })
   ```
-- Example window rules so the window floats, stays on all workspaces, and stays on top. The Hyprland 0.57 windowrule syntax changed across versions, so check the wiki before applying:
+- `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour. It does **not** raise the window above other windows: Wayland has no always-on-top for ordinary toplevels, so Electron's `alwaysOnTop` is effectively a no-op here. Review `stay_focused` only if stronger behaviour turns out to be necessary.
+- Verify the class actually matches before assuming the rule works:
   ```
-  windowrule = float, class:^(quickshelf)$
-  windowrule = pin, class:^(quickshelf)$
-  windowrule = size 360 640, class:^(quickshelf)$
+  hyprctl clients -j | jq '.[] | select(.class == "quickshelf")'
   ```
-- `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour.
 - A `hyprctl` fallback can position the window if needed.
 
 ## 5. Cross-platform notes
 
-- **Windows / macOS:** use `globalShortcut` for the toggle and `app.setLoginItemSettings` for auto-start. Tray icon on all platforms.
+- **Windows / macOS:** use `globalShortcut` for the toggle. Tray icon on all platforms. Quickshelf never registers a login item (section 8, decision 10).
 - **Linux:** the keybinding comes from Hyprland, not Electron. The tray may need `libappindicator` depending on the desktop.
 - Keep all OS-specific code behind `process.platform` checks in the main process only.
 
 ## 6. Build phases
 
-1. **Scaffold** — Electron + Vite (or plain esbuild), Tailwind, Basecoat, `token.css`, empty frameless window, single-instance toggle, Hyprland rule.
+1. **Scaffold** — Electron + esbuild + Tailwind CLI, Basecoat, `token.css`, empty frameless window, single-instance toggle, Hyprland rule.
 2. **Shelf** — drop in, list, drag out, tabs, persistence.
 3. **Clipboard** — polling watcher, history list, search, pin, copy back.
 4. **Todo** — CRUD, reorder, persistence.
@@ -129,6 +140,7 @@ quickshelf/
 | Global shortcuts blocked on Wayland         | Keybinding must come from Hyprland    | Already the plan (single-instance `--toggle`)                     |
 | Clipboard polling captures secrets          | Privacy                               | Ignore list, auto-expire, and a "pause history" toggle            |
 | Basecoat/Tailwind version drift             | Broken styles                         | Pin versions in `package.json`                                    |
+| No always-on-top on Wayland                 | Window can be covered by other apps   | Ship `float` + `pin`; review `stay_focused`; document the limit   |
 
 ## 8. Decisions
 
@@ -145,6 +157,11 @@ quickshelf/
 11. **Clean-room approach:** see section 8a.
 12. **Licence:** MIT. Applies to Quickshelf's own code. Any third-party dependency keeps its own licence.
 13. **Colour palette:** derived from the Apple Podcasts web player (https://podcasts.apple.com/us/), colours only, extracted with Playwright into `src/renderer/styles/token.css` (HSL). No layout, copy, icons, or code from that site.
+14. **Renderer build:** esbuild bundles the renderer JavaScript to one IIFE; the Tailwind CSS v4 CLI generates the stylesheet. No Vite, no frontend framework.
+15. **Quit:** phase 1 adds `quickshelf --quit` and `Ctrl+Q` in the window. Closing the window hides it; it does not quit.
+16. **Hyprland config format:** Lua at `~/.config/hypr/hyprland.lua`, confirmed against the Hyprland 0.57 wiki on 2026-11-04.
+17. **Package manager:** npm, with exact dependency versions pinned in `package.json`.
+18. **Launch behaviour:** plain `quickshelf` and `quickshelf --toggle` show the window; `quickshelf --hide` starts hidden; `quickshelf --quit` exits.
 
 ## 8a. Clean-room approach (proposed)
 
@@ -174,7 +191,7 @@ Garuda is Arch-based and electron-builder does not output pacman packages, so th
 
 1. **`quickshelf` on `$PATH`.** The keybinding calls `quickshelf --toggle`. An AppImage sitting in `~/Downloads` is not on `$PATH`, so the AppImage flow needs a small install script that copies it to `~/.local/bin/quickshelf` and makes it executable. The pacman package does this via `/usr/bin`.
 2. **Desktop entry.** A `.desktop` file so it appears in the app launcher, with the icon.
-3. **Hyprland config.** Print the two lines to add (`bind` and `windowrule`), or have `quickshelf --setup-hyprland` append them to `~/.config/hypr/hyprland.conf` after asking. Prefer the printed lines in v1; the automatic version is a later option.
+3. **Hyprland config.** Print the two lines to add (`hl.bind` and `hl.window_rule`), or have `quickshelf --setup-hyprland` append them to `~/.config/hypr/hyprland.lua` after asking. Prefer the printed lines in v1; the automatic version is a later option.
 4. **No login item.** Nothing is registered to start at login.
 5. **Single instance.** Running `quickshelf` while it is already open just shows the window instead of opening a second copy.
 6. **Dependencies declared.** The `PKGBUILD` lists runtime libs (for example `libappindicator-gtk3` if the tray is used, plus `nss`, `libxss` and similar Electron deps) so nothing is missing on first run.
@@ -192,7 +209,7 @@ Garuda is Arch-based and electron-builder does not output pacman packages, so th
 
 ### Build order
 
-1. `npm run build` (bundles the renderer with Vite and Tailwind).
+1. `npm run build` (bundles the renderer with esbuild and the Tailwind CSS v4 CLI).
 2. electron-builder produces the AppImage in `dist/`.
 3. `PKGBUILD` packages the same app files for Garuda.
 4. Test on Garuda: install the package, press `SUPER+A`, confirm the window floats, stays pinned, and resizes.

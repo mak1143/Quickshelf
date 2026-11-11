@@ -1,4 +1,7 @@
-/* Quickshelf design tokens — colours only.
+/* Quickshelf design tokens.
+ *
+ * Current scope: colours (plus the base font family). Radii, spacing, type
+ * scale, and shadows are added during phase 1.
  *
  * Palette extracted from the Apple Podcasts web player
  * (https://podcasts.apple.com/us/) with Playwright on 2026-11-02.
