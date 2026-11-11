@@ -1,6 +1,6 @@
 # Quickshelf — Plan
 
-A small, cross-platform desktop "shelf + clipboard + todo" utility built with Electron, HTML, Tailwind, and Basecoat UI. It lives as a floating window that stays on top of your workspace and is summoned with a keybinding (Hyprland on Linux; global shortcut on Windows/macOS).
+A small, cross-platform desktop "shelf + clipboard + todo" utility built with Electron, HTML, Tailwind, and Basecoat UI. It lives as a floating window that stays pinned across workspaces (Wayland has no true always-on-top) and is summoned with a keybinding (Hyprland on Linux; global shortcut on Windows/macOS).
 
 ## 1. Reference: what PerchShelf does
 
@@ -42,7 +42,7 @@ What we will **not** copy: the branding, copy text, the Store-only distribution,
 
 ### 2.4 Window behaviour ("sticky")
 
-- Frameless, always-on-top, skip-taskbar, hidden by default.
+- Frameless, skip-taskbar, hidden by default. Floated and pinned across workspaces by Hyprland; no true always-on-top on Wayland.
 - Toggled by a keybinding, not by global hooks alone (Wayland blocks most global hooks).
 - Position remembered per monitor; can be docked to a screen edge.
 
@@ -54,7 +54,7 @@ What we will **not** copy: the branding, copy text, the Store-only distribution,
 | UI            | Plain HTML + JS (ES modules)            | No framework; keep it small                                                                                                              |
 | Styling       | Tailwind CSS v4                         | Utility classes for layout                                                                                                               |
 | Components    | Basecoat UI (`basecoat-css`)            | Verify package name/version before install                                                                                               |
-| Design tokens | `token.css`                             | Single source of CSS custom properties: colours, radii, spacing, type, shadows; light + dark via `prefers-color-scheme` and `data-theme` |
+| Design tokens | `token.css`                             | Single source of CSS custom properties. Colours exist now; radii, spacing, type, and shadows are added during phase 1. Light + dark via `prefers-color-scheme` and `data-theme` |
 | Storage       | JSON files in `app.getPath('userData')` | Via a tiny store module; move to SQLite only if needed                                                                                   |
 | Packaging     | electron-builder                        | AppImage + deb (Linux), NSIS (Windows), dmg (macOS)                                                                                      |
 
@@ -68,10 +68,10 @@ quickshelf/
 ├─ src/
 │  ├─ main/
 │  │  ├─ main.js            # window, tray, single-instance, IPC
-│  │  ├─ window.js          # frameless, always-on-top, toggle, position memory
+│  │  ├─ window.js          # frameless, toggle, position memory; float/pin via Hyprland
 │  │  ├─ clipboard-watch.js # clipboard polling + history
 │  │  ├─ store.js           # JSON persistence (shelf, todo, clipboard)
-│  │  └─ cli.js             # handles `quickshelf --toggle` / `quickshelf --show` / `quickshelf --hide`
+│  │  └─ cli.js             # handles `quickshelf --toggle` / `--show` / `--hide` / `--quit`
 │  ├─ preload/
 │  │  └─ preload.js         # contextBridge API (no nodeIntegration)
 │  └─ renderer/
@@ -191,7 +191,7 @@ Garuda is Arch-based and electron-builder does not output pacman packages, so th
 
 1. **`quickshelf` on `$PATH`.** The keybinding calls `quickshelf --toggle`. An AppImage sitting in `~/Downloads` is not on `$PATH`, so the AppImage flow needs a small install script that copies it to `~/.local/bin/quickshelf` and makes it executable. The pacman package does this via `/usr/bin`.
 2. **Desktop entry.** A `.desktop` file so it appears in the app launcher, with the icon.
-3. **Hyprland config.** Print the two lines to add (`bind` and `windowrule`), or have `quickshelf --setup-hyprland` append them to `~/.config/hypr/hyprland.conf` after asking. Prefer the printed lines in v1; the automatic version is a later option.
+3. **Hyprland config.** Print the two lines to add (`hl.bind` and `hl.window_rule`), or have `quickshelf --setup-hyprland` append them to `~/.config/hypr/hyprland.lua` after asking. Prefer the printed lines in v1; the automatic version is a later option.
 4. **No login item.** Nothing is registered to start at login.
 5. **Single instance.** Running `quickshelf` while it is already open just shows the window instead of opening a second copy.
 6. **Dependencies declared.** The `PKGBUILD` lists runtime libs (for example `libappindicator-gtk3` if the tray is used, plus `nss`, `libxss` and similar Electron deps) so nothing is missing on first run.
@@ -209,7 +209,7 @@ Garuda is Arch-based and electron-builder does not output pacman packages, so th
 
 ### Build order
 
-1. `npm run build` (bundles the renderer with Vite and Tailwind).
+1. `npm run build` (bundles the renderer with esbuild and the Tailwind CSS v4 CLI).
 2. electron-builder produces the AppImage in `dist/`.
 3. `PKGBUILD` packages the same app files for Garuda.
 4. Test on Garuda: install the package, press `SUPER+A`, confirm the window floats, stays pinned, and resizes.

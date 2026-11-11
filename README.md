@@ -2,14 +2,14 @@
 
 A small, cross-platform desktop utility that combines a drag-and-drop shelf, a clipboard history, and a todo list in one floating window. Linux (Hyprland) first; Windows and macOS later.
 
-> Status: planning. See [plan.md](plan.md) for scope, architecture, build phases, and decisions.
+> Status: phase 1 (scaffold) in progress on `feat/scaffold`. See [plan.md](plan.md) for scope, architecture, build phases, and decisions.
 
 ## Features (planned)
 
 - **Shelf:** drop files and folders onto the window, drag them out later. Stores links to the originals, so drops are instant and nothing is copied.
 - **Clipboard history:** text and images, searchable, with pinning. Default cap: 200 entries.
 - **Todo:** tasks with due dates, priorities (None, Low, Medium, High), and a "Today" filter.
-- **Window:** resizable. Free-floating by default, with an option to dock to a screen edge. Frameless and always on top.
+- **Window:** resizable. Free-floating by default, with an option to dock to a screen edge. Frameless; pinned across workspaces on Hyprland (no true always-on-top on Wayland).
 
 ## Stack
 
@@ -17,7 +17,7 @@ A small, cross-platform desktop utility that combines a drag-and-drop shelf, a c
 - HTML and JavaScript
 - Tailwind CSS
 - Basecoat UI (`basecoat-css`)
-- `token.css` for design tokens (colours, spacing, type, radii)
+- `token.css` for design tokens (colours now; spacing, type, and radii added in phase 1)
 
 ## Usage (planned)
 

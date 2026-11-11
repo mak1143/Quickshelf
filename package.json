@@ -1,0 +1,22 @@
+{
+  "name": "quickshelf",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shelf, clipboard history and todo list in one floating window",
+  "license": "MIT",
+  "main": "src/main/main.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "echo 'build step coming soon'"
+  },
+  "devDependencies": {
+    "electron": "45.2.2",
+    "esbuild": "0.28.2",
+    "tailwindcss": "4.3.4",
+    "@tailwindcss/cli": "4.3.4",
+    "basecoat-css": "1.1.0"
+  }
+}
