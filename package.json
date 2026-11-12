@@ -9,8 +9,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "start": "electron .",
-    "build": "echo 'build step coming soon'"
+    "build:css": "node ./node_modules/@tailwindcss/cli/dist/index.mjs -i ./src/renderer/styles/app.css -o ./src/renderer/build/app.css --minify",
+    "build:js": "node ./node_modules/esbuild/bin/esbuild ./src/renderer/js/renderer.js --bundle --format=iife --platform=browser --outfile=./src/renderer/build/renderer.js",
+    "build": "npm run build:css && npm run build:js",
+    "start": "npm run build && node ./node_modules/electron/cli.js ."
   },
   "devDependencies": {
     "electron": "45.2.2",

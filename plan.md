@@ -13,6 +13,7 @@ Core behaviour to mirror:
 - Multiple shelves/tabs, a "All" row, and right-click actions (open, show in folder, copy path).
 - Summon/hide with a keyboard shortcut (`Ctrl+Shift+F` in the reference).
 - Lives in the tray, hides itself when empty, persists across restarts.
+- Web images, links, and selected text dragged from a browser are saved as ordinary files (image, Internet shortcut, `.txt`) in the app's own folder, not on the desktop.
 - Does not open over fullscreen apps; stays local with no account or analytics.
 
 What we will **not** copy: the branding, copy text, the Store-only distribution, and the "shake the mouse" trigger (see risks).
@@ -25,6 +26,8 @@ What we will **not** copy: the branding, copy text, the Store-only distribution,
 - Drag items out of the window (Electron `webContents.startDrag`) to other apps.
 - Remove, rename label, open, show in folder, copy path.
 - Multiple tabs (named shelves), drop on `+` to create one.
+- Accept browser drops: images, links, and selected text are written to `userData/web/` (image files, `.url` Internet shortcuts, `.txt`) and added as shelf items. No network fetch; only the dropped bytes/text are saved.
+- Removing an owned web item deletes its saved file; removing a local link only removes the reference. Open a saved link with the system browser.
 - Persist across restarts; clear-all action.
 
 ### 2.2 Clipboard history
@@ -90,7 +93,7 @@ quickshelf/
 
 ## 4. Hyprland integration (Linux)
 
-Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland generates an example file if none exists). The older `hyprland.conf` / `windowrule = ...` format is not used here. Verified against the 0.57 wiki on 2026-11-04.
+Hyprland reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland generates an example file if none exists). The older `hyprland.conf` / `windowrule = ...` format is not used here. Tested on Hyprland 0.56.2 on 2026-11-12 against the installed `hl.meta.lua` stubs and example config; the same `hl.bind` / `hl.window_rule` calls are documented for 0.57.
 
 - Launch Electron with Wayland flags: `--ozone-platform=wayland --enable-features=WaylandWindowDecorations`.
 - Set the window class from the main process with `--class=quickshelf` so Hyprland can match it.
@@ -99,16 +102,16 @@ Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland gene
   ```lua
   hl.bind("SUPER + A", hl.dsp.exec_cmd("quickshelf --toggle"))
   ```
-- Window rules so the window floats, stays pinned across workspaces, and opens at the default size:
+- Window rules so the window floats and stays pinned across workspaces:
   ```lua
   hl.window_rule({
     match = { class = "quickshelf" },
     float = true,
     pin = true,
     center = true,
-    size = { 360, 640 },
   })
   ```
+  Do **not** add `size` here. The app sets its own 360×640 logical size. Forcing `size = { 360, 640 }` clipped the right edge (including the close button) on a display with `devicePixelRatio` 1.1875; removing it fixed the clipping.
 - `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour. It does **not** raise the window above other windows: Wayland has no always-on-top for ordinary toplevels, so Electron's `alwaysOnTop` is effectively a no-op here. Review `stay_focused` only if stronger behaviour turns out to be necessary.
 - Verify the class actually matches before assuming the rule works:
   ```
@@ -125,7 +128,7 @@ Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland gene
 ## 6. Build phases
 
 1. **Scaffold** — Electron + esbuild + Tailwind CLI, Basecoat, `token.css`, empty frameless window, single-instance toggle, Hyprland rule.
-2. **Shelf** — drop in, list, drag out, tabs, persistence.
+2. **Shelf** — drop in (local links; web images/links/text saved as files), list, drag out, tabs, persistence.
 3. **Clipboard** — polling watcher, history list, search, pin, copy back.
 4. **Todo** — CRUD, reorder, persistence.
 5. **Polish** — tokens for light/dark, keyboard navigation, empty states, tray menu, settings (shortcut, history size).
@@ -140,13 +143,15 @@ Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland gene
 | Global shortcuts blocked on Wayland         | Keybinding must come from Hyprland    | Already the plan (single-instance `--toggle`)                     |
 | Clipboard polling captures secrets          | Privacy                               | Ignore list, auto-expire, and a "pause history" toggle            |
 | Basecoat/Tailwind version drift             | Broken styles                         | Pin versions in `package.json`                                    |
+| Browser link drops save `.url` files        | Linux file managers may not open them | Shelf "Open" uses `shell.openExternal`; revisit `.desktop` if needed |
+| Saved web content can grow large            | Disk use                              | Cap each saved item (for example 50 MB); delete owned files on removal |
 | No always-on-top on Wayland                 | Window can be covered by other apps   | Ship `float` + `pin`; review `stay_focused`; document the limit   |
 
 ## 8. Decisions
 
 1. **Name:** **Quickshelf**. Binary/command: `quickshelf`. Working folder name: `quickshelf/`.
 2. **Platforms:** Linux (Hyprland) first. Windows and macOS come after the Linux build is stable.
-3. **Shelf items:** store links (path references) only for MVP. Files are never copied unless the user explicitly chooses "copy into Quickshelf".
+3. **Shelf items:** local files and folders are stored as links (path references) only; never copied unless the user explicitly chooses "copy into Quickshelf". Web images, links, and text dropped from a browser are the exception: they have no stable local path, so Quickshelf saves them as files in `userData/web/` (image, `.url`, `.txt`) and stores a link to that file. Removing an owned web item deletes the saved file.
 4. **Clipboard:** text and images. History cap 200 entries (configurable).
 5. **Todo:** due dates and priorities (None / Low / Medium / High), plus a "Today" filter.
 6. **Window:** resizable. Supports both **free-floating** (default) and **docked to a screen edge** (left/right/top/bottom, chosen in settings).
@@ -159,9 +164,10 @@ Hyprland 0.57 reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland gene
 13. **Colour palette:** derived from the Apple Podcasts web player (https://podcasts.apple.com/us/), colours only, extracted with Playwright into `src/renderer/styles/token.css` (HSL). No layout, copy, icons, or code from that site.
 14. **Renderer build:** esbuild bundles the renderer JavaScript to one IIFE; the Tailwind CSS v4 CLI generates the stylesheet. No Vite, no frontend framework.
 15. **Quit:** phase 1 adds `quickshelf --quit` and `Ctrl+Q` in the window. Closing the window hides it; it does not quit.
-16. **Hyprland config format:** Lua at `~/.config/hypr/hyprland.lua`, confirmed against the Hyprland 0.57 wiki on 2026-11-04.
+16. **Hyprland config format:** Lua at `~/.config/hypr/hyprland.lua`, tested on Hyprland 0.56.2 on 2026-11-12 against the installed stubs and example config.
 17. **Package manager:** npm, with exact dependency versions pinned in `package.json`.
 18. **Launch behaviour:** plain `quickshelf` and `quickshelf --toggle` show the window; `quickshelf --hide` starts hidden; `quickshelf --quit` exits.
+19. **Web content:** images as image files, links as `.url` Internet shortcuts, text as `.txt`, stored in `userData/web/`. No network fetch; only the dropped bytes/text are saved. The shelf opens links with `shell.openExternal`. Cap each saved item (for example 50 MB) and delete owned files when the item is removed.
 
 ## 8a. Clean-room approach (proposed)
 
