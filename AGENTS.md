@@ -4,7 +4,7 @@ Read this file before you change anything. If it disagrees with `plan.md`, `plan
 
 ## 1. Project in one paragraph
 
-Quickshelf is a small, cross-platform desktop utility with three parts in one floating window: a drag-and-drop shelf (stores links to files), a clipboard history, and a todo list with due dates and priorities. It is built with Electron, plain HTML and JavaScript, Tailwind CSS, Basecoat UI (`basecoat-css`), and a `token.css` design-token file. Linux (Hyprland) is the first target. Windows and macOS come later.
+Quickshelf is a small, cross-platform desktop utility with three parts in one floating window: a drag-and-drop shelf (stores links to local files and saves browser drops as files), a clipboard history, and a todo list with due dates and priorities. It is built with Electron, plain HTML and JavaScript, Tailwind CSS, Basecoat UI (`basecoat-css`), and a `token.css` design-token file. Linux (Hyprland) is the first target. Windows and macOS come later.
 
 ## 1a. Clean-room rules
 
@@ -19,7 +19,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 
 ## 3. Current status
 
-**Phase 1 (scaffold) is in progress on `feat/scaffold`.** The repo holds docs (`plan.md`, `README.md`, `AGENTS.md`), a design file (`src/renderer/styles/token.css`), and an untracked `package.json` with pinned dependencies. There is no Electron main process, preload, renderer HTML/JS, build config, or runnable command yet.
+**Phase 1 (scaffold) is complete on `feat/scaffold-impl`; PR #2 is open and mergeable.** The repo has the Electron main process, preload, renderer HTML/JS, esbuild + Tailwind build, single-instance toggle, frameless window, and the Hyprland rule. Phase 2 (shelf) starts on `feat/shelf` after PR #2 merges.
 
 - Keep scaffolding on `feat/scaffold` and merge via PR. Do not start phase 2 until phase 1 is complete and merged.
 - Documentation changes (`plan.md`, `README.md`, `AGENTS.md`) are allowed when the user asks for them.
@@ -33,7 +33,8 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 | Name              | Quickshelf                                                                                                     |
 | Command           | `quickshelf`                                                                                                   |
 | First platform    | Linux, Hyprland / Garuda Linux                                                                                 |
-| Shelf items       | Store links (path references) only. Never copy files unless the user explicitly chooses "copy into Quickshelf" |
+| Shelf items       | Local files/folders are links only. Web images/links/text dropped from a browser are saved as files in `userData/web/` (image, `.url`, `.txt`) and stored as links to those files. Never copy local files unless the user explicitly chooses "copy into Quickshelf". |
+| Web content       | Browser drops: images as image files, links as `.url`, text as `.txt` in `userData/web/`. No network fetch; shelf "Open" uses `shell.openExternal`. Cap each item (for example 50 MB); removing an owned item deletes its file. |
 | Clipboard         | Text and images. History cap 200 (configurable)                                                                |
 | Todo              | Due dates, priorities (None / Low / Medium / High), "Today" filter                                             |
 | Window            | Resizable. Free-floating by default, with an option to dock to a screen edge. No true always-on-top on Wayland; Hyprland `float` + `pin`. |
@@ -46,7 +47,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 | UI colour reference | Apple Podcasts web player (https://podcasts.apple.com/us/). Colours only, extracted with Playwright into `token.css`. No layout, copy, icons, or code from Apple. |
 | Renderer build    | esbuild bundles the renderer JS to one IIFE. Tailwind CSS v4 CLI builds the stylesheet. No Vite.                |
 | Quit              | `quickshelf --quit` and `Ctrl+Q`. Closing the window hides it.                                                 |
-| Hyprland config   | Lua at `~/.config/hypr/hyprland.lua` (0.57). Not `hyprland.conf`, not `windowrule = ...`.                      |
+| Hyprland config   | Lua at `~/.config/hypr/hyprland.lua` (0.56.2 tested; 0.57 syntax compatible for these calls). Not `hyprland.conf`, not `windowrule = ...`. |
 | Package manager   | npm. Exact dependency versions pinned in `package.json`.                                                       |
 
 ## 5. Stack rules
@@ -66,7 +67,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 - Keep the app single-instance (`app.requestSingleInstanceLock()`). Running `quickshelf --toggle` when the app is already open must show or hide the window, never start a second copy.
 - Do not rely on global keyboard hooks or mouse hooks. Wayland blocks most of them. The keybinding comes from Hyprland.
 - Do not implement "shake to open". It was dropped because it is not reliable on Wayland.
-- Window behaviour comes from Hyprland rules in `~/.config/hypr/hyprland.lua` (Lua, not `hyprland.conf`): `hl.window_rule({ ... })` with `float`, `pin`, and `size`. Check the 0.57 wiki before changing them.
+- Window behaviour comes from Hyprland rules in `~/.config/hypr/hyprland.lua` (Lua, not `hyprland.conf`): `hl.window_rule({ ... })` with `float` and `pin`. Let the app set its own size; do not add `size` to the rule (it clipped the right edge on a display with `devicePixelRatio` 1.1875). Check the installed stubs/example before changing the calls.
 - Wayland has no true always-on-top for ordinary toplevels. `pin` keeps the window on every workspace; it does not raise it above other windows. Do not promise always-on-top.
 
 ## 7. Working rules for agents
@@ -86,13 +87,14 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 ## 8. Open items (to confirm with the user)
 
 - Shortcut: `SUPER+A` is confirmed, but it is a placeholder until the user tests it.
+- Web link format: `.url` for v1 (matches PerchShelf). Revisit `.desktop` on Linux if file managers do not open `.url` files.
 - Packaging for the AUR package: optional, decide later.
 - Always-on-top on Wayland: not achievable for ordinary toplevels. Current behaviour is `float` + `pin`. Decide in phase 1 testing whether `stay_focused` is worth the focus-stealing trade-off.
 
 ## 9. Phase order
 
 1. Scaffold: Electron, esbuild, Tailwind CLI, Basecoat, `token.css` (palette already exists — extend it, do not recreate), frameless window, single-instance toggle, Hyprland rule.
-2. Shelf: drop, list, drag out, tabs, persistence.
+2. Shelf: drop (local links; web images/links/text saved as files), list, drag out, tabs, persistence.
 3. Clipboard: polling watcher, history, search, pin, copy back.
 4. Todo: create, edit, delete, reorder, due dates, priorities, "Today" filter.
 5. Polish: themes, keyboard navigation, empty states, settings.
@@ -106,5 +108,6 @@ Start with phase 1 only when the user confirms.
 - Running `quickshelf` twice does not open two windows.
 - The window floats, stays on all workspaces, and can be resized.
 - Dragging a file in adds a link to the shelf. Dragging it out works.
+- Dropping an image, link, or text from a browser saves a file in `userData/web/` and adds a shelf item.
 - The app starts without any login-time setup.
 - Light and dark themes both render correctly from `token.css`.
