@@ -30,6 +30,10 @@
   --color-divider: hsl(0 0% 0% / 15%); /* labelDivider */
   --color-hairline: 0.5px solid hsl(0 0% 0% / 15%); /* keyline-border-style */
 
+  /* Scrollbars */
+  --color-scrollbar-thumb: hsl(0 0% 0% / 65%);
+  --color-scrollbar-thumb-hover: hsl(0 0% 0% / 85%);
+
   /* Accent */
   --color-accent: hsl(266 71% 49%); /* keyColor */
   --color-accent-pressed: hsl(266 97% 36%); /* keyColor-pressed */
@@ -73,6 +77,9 @@
     --color-divider: hsl(0 0% 100% / 10%); /* labelDivider */
     --color-hairline: 0.5px solid hsl(0 0% 100% / 10%);
 
+    --color-scrollbar-thumb: hsl(0 0% 0% / 65%);
+    --color-scrollbar-thumb-hover: hsl(0 0% 0% / 85%);
+
     --color-accent: hsl(266 85% 65%); /* keyColor */
     --color-accent-pressed: hsl(273 100% 77%);
     --color-accent-rollover: hsl(273 100% 77%);
@@ -103,6 +110,9 @@
 
   --color-divider: hsl(0 0% 100% / 10%);
   --color-hairline: 0.5px solid hsl(0 0% 100% / 10%);
+
+  --color-scrollbar-thumb: hsl(0 0% 0% / 65%);
+  --color-scrollbar-thumb-hover: hsl(0 0% 0% / 85%);
 
   --color-accent: hsl(266 85% 65%);
   --color-accent-pressed: hsl(273 100% 77%);

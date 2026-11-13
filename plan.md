@@ -111,7 +111,7 @@ Hyprland reads a Lua config at `~/.config/hypr/hyprland.lua` (Hyprland generates
     center = true,
   })
   ```
-  Do **not** add `size` here. The app sets its own 360×640 logical size. Forcing `size = { 360, 640 }` clipped the right edge (including the close button) on a display with `devicePixelRatio` 1.1875; removing it fixed the clipping.
+  Do **not** add `size` here. The app sets its own 480×480 logical size. Forcing `size = { 480, 480 }` clipped the right edge (including the close button) on a display with `devicePixelRatio` 1.1875; removing it fixed the clipping.
 - `pin` keeps the window visible across workspaces, which gives the "sticky" behaviour. It does **not** raise the window above other windows: Wayland has no always-on-top for ordinary toplevels, so Electron's `alwaysOnTop` is effectively a no-op here. Review `stay_focused` only if stronger behaviour turns out to be necessary.
 - Verify the class actually matches before assuming the rule works:
   ```

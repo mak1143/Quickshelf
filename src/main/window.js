@@ -1,8 +1,8 @@
 const path = require('node:path');
 const { BrowserWindow, app } = require('electron');
 
-const DEFAULT_WIDTH = 360;
-const DEFAULT_HEIGHT = 640;
+const DEFAULT_WIDTH = 480;
+const DEFAULT_HEIGHT = 480;
 
 let mainWindow = null;
 let quitting = false;
@@ -11,8 +11,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: DEFAULT_WIDTH,
     height: DEFAULT_HEIGHT,
-    minWidth: 320,
-    minHeight: 480,
+    minWidth: 360,
+    minHeight: 360,
     show: false,
     frame: false,
     resizable: true,

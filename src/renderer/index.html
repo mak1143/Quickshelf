@@ -10,7 +10,7 @@
     <title>Quickshelf</title>
     <link rel="stylesheet" href="./build/app.css" />
   </head>
-  <body class="h-full bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
+  <body class="bg-[var(--color-bg)] text-[var(--color-text)] antialiased">
     <div class="flex h-screen flex-col">
       <header
         class="flex items-center justify-between border-b border-[var(--color-divider)] px-4 py-3 select-none [-webkit-app-region:drag]"
@@ -25,8 +25,19 @@
           &times;
         </button>
       </header>
-      <main class="flex flex-1 items-center justify-center p-6">
-        <p class="text-[0.8125rem] text-[var(--color-text-tertiary)]">Phase 1 scaffold</p>
+      <nav
+        id="tabs"
+        aria-label="Shelf tabs"
+        class="flex items-center gap-1 overflow-x-auto overflow-y-hidden border-b border-[var(--color-divider)] px-2 py-1.5"
+      ></nav>
+      <main id="dropzone" class="relative flex flex-1 flex-col overflow-y-auto p-2 transition-colors">
+        <ul id="items" class="flex flex-col gap-1"></ul>
+        <div
+          id="empty"
+          class="pointer-events-none flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center"
+        >
+          <p class="text-[0.8125rem] text-[var(--color-text-tertiary)]">Drop files, links, or text here</p>
+        </div>
       </main>
     </div>
     <script src="./build/renderer.js"></script>
