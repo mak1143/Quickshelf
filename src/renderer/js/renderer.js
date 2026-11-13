@@ -1,3 +1,5 @@
+import { initShelf } from './shelf.js';
+
 const quitButton = document.getElementById('quit');
 
 if (quitButton) {
@@ -5,3 +7,5 @@ if (quitButton) {
     window.quickshelf?.quit();
   });
 }
+
+initShelf();

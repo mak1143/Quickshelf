@@ -1,6 +1,7 @@
 const { app, ipcMain } = require('electron');
 const { parseArgs } = require('./cli');
 const { createWindow, showWindow, hideWindow, toggleWindow, quit } = require('./window');
+const { initShelf } = require('./shelf');
 
 const intent = parseArgs(process.argv);
 
@@ -50,6 +51,7 @@ if (!hasLock) {
       return;
     }
 
+    initShelf();
     createWindow();
 
     ipcMain.on('window:toggle', () => toggleWindow());
