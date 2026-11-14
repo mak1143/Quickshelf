@@ -12,6 +12,8 @@ const {
   shell,
 } = require('electron');
 const { ShelfStore, createLinkItem, createOwnedItem } = require('./shelf-store');
+const { guardHandle, guardEvent } = require('./ipc-guard');
+const { isInsideDir } = require('./path-utils');
 
 const MAX_WEB_BYTES = 50 * 1024 * 1024;
 const FALLBACK_ICON =
@@ -44,12 +46,13 @@ function registerIpc() {
   if (registered) return;
   registered = true;
 
-  ipcMain.handle('shelf:get-state', () => store.getState());
+  ipcMain.handle('shelf:get-state', guardHandle(() => store.getState()));
 
-  ipcMain.handle('shelf:add-paths', (_event, payload = {}) => {
-    const tabId = payload.tabId || store.getActiveTab()?.id;
-    const paths = Array.isArray(payload.paths)
-      ? payload.paths.filter((item) => typeof item === 'string' && path.isAbsolute(item) && fs.existsSync(item))
+  ipcMain.handle('shelf:add-paths', guardHandle((_event, payload = {}) => {
+    const safe = payload && typeof payload === 'object' ? payload : {};
+    const tabId = safe.tabId || store.getActiveTab()?.id;
+    const paths = Array.isArray(safe.paths)
+      ? safe.paths.filter((item) => typeof item === 'string' && path.isAbsolute(item) && fs.existsSync(item))
       : [];
     const items = paths.map((filePath) => {
       let isDirectory = false;
@@ -61,55 +64,81 @@ function registerIpc() {
       return createLinkItem(filePath, isDirectory);
     });
     return store.addItems(tabId, items);
-  });
+  }));
 
-  ipcMain.handle('shelf:add-web', (_event, payload = {}) => {
-    const tabId = payload.tabId || store.getActiveTab()?.id;
-    const item = createWebItem(payload);
+  ipcMain.handle('shelf:add-web', guardHandle((_event, payload = {}) => {
+    const safe = payload && typeof payload === 'object' ? payload : {};
+    const tabId = safe.tabId || store.getActiveTab()?.id;
+    const item = createWebItem(safe);
     return store.addItems(tabId, [item]);
-  });
+  }));
 
-  ipcMain.handle('shelf:remove-item', (_event, payload = {}) => {
-    const { state, removed } = store.removeItem(payload.tabId, payload.itemId);
+  ipcMain.handle('shelf:remove-item', guardHandle((_event, payload = {}) => {
+    const safe = payload && typeof payload === 'object' ? payload : {};
+    const { state, removed } = store.removeItem(safe.tabId, safe.itemId);
     if (removed) deleteOwnedFile(removed);
     return state;
-  });
+  }));
 
-  ipcMain.handle('shelf:clear-tab', (_event, tabId) => {
+  ipcMain.handle('shelf:clear-tab', guardHandle((_event, tabId) => {
     const { state, removed } = store.clearTab(tabId);
     removed.forEach(deleteOwnedFile);
     return state;
-  });
+  }));
 
-  ipcMain.handle('shelf:add-tab', (_event, name) => store.addTab(name));
+  ipcMain.handle('shelf:add-tab', guardHandle((_event, name) => store.addTab(name)));
 
-  ipcMain.handle('shelf:rename-tab', (_event, payload = {}) => store.renameTab(payload.tabId, payload.name));
+  ipcMain.handle(
+    'shelf:rename-tab',
+    guardHandle((_event, payload = {}) => {
+      const safe = payload && typeof payload === 'object' ? payload : {};
+      return store.renameTab(safe.tabId, safe.name);
+    }),
+  );
 
-  ipcMain.handle('shelf:delete-tab', (_event, tabId) => {
+  ipcMain.handle('shelf:delete-tab', guardHandle((_event, tabId) => {
     const { state, removed } = store.deleteTab(tabId);
     removed.forEach(deleteOwnedFile);
     return state;
-  });
+  }));
 
-  ipcMain.handle('shelf:set-active-tab', (_event, tabId) => store.setActiveTab(tabId));
+  ipcMain.handle('shelf:set-active-tab', guardHandle((_event, tabId) => store.setActiveTab(tabId)));
 
-  ipcMain.handle('shelf:open-item', (_event, payload = {}) => openItem(payload.tabId, payload.itemId));
+  ipcMain.handle(
+    'shelf:open-item',
+    guardHandle((_event, payload = {}) => {
+      const safe = payload && typeof payload === 'object' ? payload : {};
+      return openItem(safe.tabId, safe.itemId);
+    }),
+  );
 
-  ipcMain.handle('shelf:show-item', (_event, payload = {}) => {
-    const item = store.findItem(payload.tabId, payload.itemId);
-    if (item) shell.showItemInFolder(item.path);
-  });
+  ipcMain.handle(
+    'shelf:show-item',
+    guardHandle((_event, payload = {}) => {
+      const safe = payload && typeof payload === 'object' ? payload : {};
+      const item = getTrustedItem(safe.tabId, safe.itemId);
+      if (item) shell.showItemInFolder(item.path);
+    }),
+  );
 
-  ipcMain.handle('shelf:copy-path', (_event, payload = {}) => {
-    const item = store.findItem(payload.tabId, payload.itemId);
-    if (item) clipboard.writeText(item.path);
-  });
+  ipcMain.handle(
+    'shelf:copy-path',
+    guardHandle((_event, payload = {}) => {
+      const safe = payload && typeof payload === 'object' ? payload : {};
+      const item = getTrustedItem(safe.tabId, safe.itemId);
+      if (item) clipboard.writeText(item.path);
+    }),
+  );
 
-  ipcMain.handle('shelf:show-menu', (event, payload = {}) => {
-    showItemMenu(event, payload.tabId, payload.itemId);
-  });
+  ipcMain.handle(
+    'shelf:show-menu',
+    guardHandle((event, payload = {}) => {
+      const safe = payload && typeof payload === 'object' ? payload : {};
+      showItemMenu(event, safe.tabId, safe.itemId);
+    }),
+  );
 
-  ipcMain.handle('shelf:show-tab-menu', (event, tabId) => {
+  ipcMain.handle('shelf:show-tab-menu', guardHandle((event, tabId) => {
     const tab = store.getTab(tabId);
     if (!tab) return;
     const window = BrowserWindow.fromWebContents(event.sender);
@@ -134,11 +163,12 @@ function registerIpc() {
       },
     ]);
     menu.popup({ window: window || undefined });
-  });
+  }));
 
-  ipcMain.on('shelf:drag-out', (event, payload = {}) => {
-    void dragOut(event, payload.tabId, payload.itemId);
-  });
+  ipcMain.on('shelf:drag-out', guardEvent((event, payload = {}) => {
+    const safe = payload && typeof payload === 'object' ? payload : {};
+    void dragOut(event, safe.tabId, safe.itemId);
+  }));
 }
 
 function createWebItem(payload) {
@@ -159,13 +189,8 @@ function createWebItem(payload) {
   if (payload.kind === 'link') {
     const raw = typeof payload.url === 'string' ? payload.url.trim() : '';
     if (!raw || /[\r\n]/.test(raw)) throw new Error('Invalid link');
-    let url;
-    try {
-      url = new URL(raw);
-    } catch {
-      throw new Error('Invalid link');
-    }
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') throw new Error('Unsupported link');
+    const url = parseHttpUrl(raw);
+    if (!url) throw new Error('Unsupported link');
     const filePath = writeWebFile('url', `[InternetShortcut]\nURL=${url.toString()}\n`);
     return createOwnedItem({
       filePath,
@@ -218,27 +243,43 @@ function cleanName(name) {
     .slice(0, 120);
 }
 
+function parseHttpUrl(raw) {
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+function getTrustedItem(tabId, itemId) {
+  const item = store.findItem(tabId, itemId);
+  if (!item) return null;
+  if (item.kind === 'owned' && (!webDir || !isInsideDir(webDir, item.path))) return null;
+  return item;
+}
+
 function deleteOwnedFile(item) {
   if (!item || item.kind !== 'owned') return;
-  const resolved = path.resolve(item.path);
-  const root = path.resolve(webDir) + path.sep;
-  if (!resolved.startsWith(root)) return;
+  if (!webDir || !isInsideDir(webDir, item.path)) return;
   try {
-    fs.unlinkSync(resolved);
+    fs.unlinkSync(path.resolve(item.path));
   } catch (error) {
     if (error.code !== 'ENOENT') console.error('Could not delete web item:', error.message);
   }
 }
 
 async function openItem(tabId, itemId) {
-  const item = store.findItem(tabId, itemId);
+  const item = getTrustedItem(tabId, itemId);
   if (!item) return { error: 'Item not found' };
   try {
     if (item.kind === 'owned' && item.path.endsWith('.url')) {
       const content = fs.readFileSync(item.path, 'utf8');
       const match = content.match(/^URL=(.+)$/m);
       if (!match) return { error: 'Invalid shortcut' };
-      await shell.openExternal(match[1].trim());
+      const url = parseHttpUrl(match[1].trim());
+      if (!url) return { error: 'Unsupported shortcut' };
+      await shell.openExternal(url.toString());
       return { ok: true };
     }
     const error = await shell.openPath(item.path);
@@ -249,7 +290,7 @@ async function openItem(tabId, itemId) {
 }
 
 function showItemMenu(event, tabId, itemId) {
-  const item = store.findItem(tabId, itemId);
+  const item = getTrustedItem(tabId, itemId);
   if (!item) return;
   const window = BrowserWindow.fromWebContents(event.sender);
   const menu = Menu.buildFromTemplate([
@@ -276,7 +317,7 @@ function showItemMenu(event, tabId, itemId) {
 }
 
 async function dragOut(event, tabId, itemId) {
-  const item = store.findItem(tabId, itemId);
+  const item = getTrustedItem(tabId, itemId);
   if (!item) return;
   let icon;
   try {

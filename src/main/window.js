@@ -1,8 +1,10 @@
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const { BrowserWindow, app } = require('electron');
 
 const DEFAULT_WIDTH = 480;
 const DEFAULT_HEIGHT = 480;
+const RENDERER_URL = pathToFileURL(path.join(__dirname, '../renderer/index.html')).href;
 
 let mainWindow = null;
 let quitting = false;
@@ -79,6 +81,18 @@ function toggleWindow() {
   showWindow();
 }
 
+function isTrustedIpcSender(event) {
+  if (!mainWindow || mainWindow.isDestroyed()) return false;
+
+  const frame = event.senderFrame;
+  return Boolean(
+    frame &&
+      frame === event.sender.mainFrame &&
+      event.sender.id === mainWindow.webContents.id &&
+      frame.url === RENDERER_URL,
+  );
+}
+
 function quit() {
   quitting = true;
   app.quit();
@@ -89,5 +103,6 @@ module.exports = {
   showWindow,
   hideWindow,
   toggleWindow,
+  isTrustedIpcSender,
   quit,
 };
