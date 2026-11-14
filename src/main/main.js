@@ -1,6 +1,7 @@
 const { app, ipcMain } = require('electron');
 const { parseArgs } = require('./cli');
 const { createWindow, showWindow, hideWindow, toggleWindow, quit } = require('./window');
+const { guardHandle, guardEvent } = require('./ipc-guard');
 const { initShelf } = require('./shelf');
 
 const intent = parseArgs(process.argv);
@@ -54,10 +55,10 @@ if (!hasLock) {
     initShelf();
     createWindow();
 
-    ipcMain.on('window:toggle', () => toggleWindow());
-    ipcMain.on('window:hide', () => hideWindow());
-    ipcMain.on('app:quit', () => quit());
-    ipcMain.handle('app:version', () => app.getVersion());
+    ipcMain.on('window:toggle', guardEvent(() => toggleWindow()));
+    ipcMain.on('window:hide', guardEvent(() => hideWindow()));
+    ipcMain.on('app:quit', guardEvent(() => quit()));
+    ipcMain.handle('app:version', guardHandle(() => app.getVersion()));
 
     if (!intent.hide) {
       showWindow();

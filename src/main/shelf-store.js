@@ -1,6 +1,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { isInsideDir } = require('./path-utils');
 
 const STORE_VERSION = 1;
 
@@ -38,12 +39,16 @@ function defaultState() {
   return { version: STORE_VERSION, activeTabId: tab.id, tabs: [tab] };
 }
 
-function normalizeItem(raw) {
+function normalizeItem(raw, ownedDir) {
   if (!raw || typeof raw !== 'object') return null;
   if (typeof raw.path !== 'string' || !raw.path) return null;
+
+  const kind = raw.kind === 'owned' ? 'owned' : 'link';
+  if (kind === 'owned' && (!ownedDir || !isInsideDir(ownedDir, raw.path))) return null;
+
   return {
     id: typeof raw.id === 'string' ? raw.id : crypto.randomUUID(),
-    kind: raw.kind === 'owned' ? 'owned' : 'link',
+    kind,
     path: raw.path,
     name: typeof raw.name === 'string' && raw.name ? raw.name : path.basename(raw.path),
     mime: typeof raw.mime === 'string' ? raw.mime : null,
@@ -53,14 +58,14 @@ function normalizeItem(raw) {
   };
 }
 
-function normalizeState(raw) {
+function normalizeState(raw, ownedDir) {
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.tabs)) return defaultState();
   const tabs = raw.tabs
     .filter((tab) => tab && typeof tab === 'object')
     .map((tab) => ({
       id: typeof tab.id === 'string' ? tab.id : crypto.randomUUID(),
       name: typeof tab.name === 'string' && tab.name ? tab.name : 'Shelf',
-      items: Array.isArray(tab.items) ? tab.items.map(normalizeItem).filter(Boolean) : [],
+      items: Array.isArray(tab.items) ? tab.items.map((item) => normalizeItem(item, ownedDir)).filter(Boolean) : [],
     }));
   if (tabs.length === 0) return defaultState();
   const activeTabId = tabs.some((tab) => tab.id === raw.activeTabId) ? raw.activeTabId : tabs[0].id;
@@ -71,13 +76,14 @@ class ShelfStore {
   constructor(baseDir) {
     this.baseDir = baseDir;
     this.storePath = path.join(baseDir, 'shelf.json');
+    this.webDir = path.join(baseDir, 'web');
     this.state = defaultState();
   }
 
   load() {
     try {
       const raw = fs.readFileSync(this.storePath, 'utf8');
-      this.state = normalizeState(JSON.parse(raw));
+      this.state = normalizeState(JSON.parse(raw), this.webDir);
     } catch (error) {
       if (error.code !== 'ENOENT') {
         console.error('Could not read shelf store:', error.message);
