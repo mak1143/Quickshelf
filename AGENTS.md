@@ -1,6 +1,6 @@
 # AGENTS.md — Quickshelf agent instructions
 
-Read this file before you change anything. If it disagrees with `plan.md`, `plan.md` wins — tell the user about the conflict.
+Read this file before you change anything. If it disagrees with `plan.md`, `plan.md` wins — tell the user about the conflict. `plan.md` is a local-only file: it is gitignored and never published.
 
 ## 1. Project in one paragraph
 
@@ -14,7 +14,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 
 ## 2. Source of truth
 
-- `plan.md` is the full specification: scope, architecture, build phases, decisions, risks, and packaging.
+- `plan.md` is the full specification: scope, architecture, build phases, decisions, risks, and packaging. It stays local: `.gitignore` excludes it, so it never appears in the repository or on GitHub.
 - `README.md` is the public-facing summary.
 
 ## 3. Current status
@@ -22,7 +22,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 **Phase 1 (scaffold) is complete on `feat/scaffold-impl`; PR #2 is open and mergeable.** The repo has the Electron main process, preload, renderer HTML/JS, esbuild + Tailwind build, single-instance toggle, frameless window, and the Hyprland rule. Phase 2 (shelf) starts on `feat/shelf` after PR #2 merges.
 
 - Keep scaffolding on `feat/scaffold` and merge via PR. Do not start phase 2 until phase 1 is complete and merged.
-- Documentation changes (`plan.md`, `README.md`, `AGENTS.md`) are allowed when the user asks for them.
+- Documentation changes (`plan.md`, `README.md`, `AGENTS.md`) are allowed when the user asks for them. Only `README.md` and `AGENTS.md` are published.
 - `.github/` (PR template, future CI) is tracked. `.gitignore` already ignores Node build output: `node_modules/`, `dist/`, `out/`, and `src/renderer/build/`.
 - Config snippets in docs (Hyprland `hl.bind` and `hl.window_rule`) are examples, not files to create.
 
