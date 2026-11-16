@@ -1,13 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Quickshelf">
-  <defs>
-    <linearGradient id="bg" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7C3AED" />
-      <stop offset="1" stop-color="#4C1D95" />
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)" />
-  <rect x="112" y="352" width="288" height="28" rx="14" fill="#fff" fill-opacity="0.96" />
-  <rect x="144" y="232" width="72" height="104" rx="18" fill="#fff" />
-  <rect x="232" y="176" width="72" height="160" rx="18" fill="#fff" fill-opacity="0.86" />
-  <rect x="320" y="272" width="72" height="64" rx="18" fill="#fff" fill-opacity="0.7" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Quickshelf">
+  <rect width="64" height="64" rx="14" fill="#ffffff"/>
+  <g fill="#000" transform="translate(5 5)">
+    <path d="M17.5,-0.5 A18,18 0 0 0 17.5,35.5 Z"/>
+    <path d="M17.5,17.5 A18,18 0 0 1 53.5,17.5 Z"/>
+    <path d="M-0.5,35.5 A18,18 0 0 0 35.5,35.5 Z"/>
+    <path d="M35.5,17.5 A18,18 0 0 1 35.5,53.5 Z"/>
+  </g>
 </svg>
