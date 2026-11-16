@@ -3,22 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "description": "Shelf, clipboard history and todo list in one floating window",
+  "author": "Quickshelf contributors",
   "license": "MIT",
   "main": "src/main/main.js",
+  "desktopName": "quickshelf",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "build:css": "node ./node_modules/@tailwindcss/cli/dist/index.mjs -i ./src/renderer/styles/app.css -o ./src/renderer/build/app.css --minify",
-    "build:js": "node ./node_modules/esbuild/bin/esbuild ./src/renderer/js/renderer.js --bundle --format=iife --platform=browser --outfile=./src/renderer/build/renderer.js",
+    "build:js": "node ./scripts/build-renderer.js",
     "build": "npm run build:css && npm run build:js",
-    "start": "npm run build && node ./node_modules/electron/cli.js ."
+    "start": "npm run build && node ./node_modules/electron/cli.js .",
+    "dist": "npm run build && node ./node_modules/electron-builder/cli.js --linux AppImage",
+    "dist:dir": "npm run build && node ./node_modules/electron-builder/cli.js --dir"
   },
   "devDependencies": {
-    "electron": "45.2.2",
-    "esbuild": "0.28.2",
-    "tailwindcss": "4.3.4",
     "@tailwindcss/cli": "4.3.4",
-    "basecoat-css": "1.1.0"
+    "basecoat-css": "1.1.0",
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0",
+    "esbuild": "0.28.2",
+    "tailwindcss": "4.3.4"
   }
 }

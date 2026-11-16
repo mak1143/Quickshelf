@@ -1,0 +1,40 @@
+appId: io.github.mak1143.quickshelf
+productName: Quickshelf
+copyright: Copyright © 2026 Quickshelf contributors
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - package.json
+  - src/**/*
+  - "!**/*.map"
+  - "!**/test/**"
+  - "!**/*.md"
+
+asar: true
+
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Utility
+  icon: build/icons/
+  executableName: quickshelf
+  syncDesktopName: true
+  synopsis: Shelf, clipboard history and todo list
+  description: A small floating desktop utility with a file shelf, clipboard history, and todo list.
+  desktop:
+    entry:
+      Name: Quickshelf
+      Comment: Shelf, clipboard history and todo list
+      Categories: Utility;
+      Keywords: shelf;clipboard;todo;utility;
+      StartupWMClass: quickshelf
+      Terminal: false
+      Type: Application
+
+appImage:
+  artifactName: Quickshelf-${version}-${arch}.${ext}
