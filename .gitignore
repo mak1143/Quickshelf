@@ -8,3 +8,6 @@ src/renderer/build/
 
 # Playwright MCP session artifacts (never commit)
 .playwright-mcp/
+
+# Local-only specification (not published)
+plan.md
