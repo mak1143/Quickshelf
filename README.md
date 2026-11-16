@@ -2,7 +2,7 @@
 
 A small, cross-platform desktop utility that combines a drag-and-drop shelf, a clipboard history, and a todo list in one floating window. Linux (Hyprland) first; Windows and macOS later.
 
-> Status: early development. The shelf (drops, tabs, persistence) is implemented; clipboard history and todo are still planned. See [plan.md](plan.md) for scope, architecture, build phases, and decisions.
+> Status: early development. The shelf (drops, tabs, persistence) is implemented; clipboard history and todo are still planned.
 
 ## Features (planned)
 
@@ -34,7 +34,7 @@ Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`, which uses Lua. The older `hy
 - a `hl.bind` for `SUPER + A` that runs `quickshelf --toggle`
 - a `hl.window_rule` that floats and pins the window (the app sets its own size)
 
-See [plan.md](plan.md) section 4 for the exact snippet. Note that Wayland does not support true always-on-top for ordinary windows: `pin` keeps Quickshelf on every workspace, but other windows can still cover it.
+`scripts/install-appimage.sh` prints the exact snippet when it finishes. Note that Wayland does not support true always-on-top for ordinary windows: `pin` keeps Quickshelf on every workspace, but other windows can still cover it.
 
 ## Installation
 
