@@ -38,15 +38,16 @@ Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`, which uses Lua. The older `hy
 
 ## Installation
 
-- **AppImage (Linux x64):** download `Quickshelf-0.1.0-x86_64.AppImage` from the [releases page](https://github.com/mak1143/Quickshelf/releases), make it executable, and run it.
+- **AppImage (Linux x64):** download the latest `Quickshelf-*-x86_64.AppImage` from the [releases page](https://github.com/mak1143/Quickshelf/releases), make it executable, and run it.
+- AppImages need `libfuse.so.2` (the `fuse2` package on Arch/Garuda, `libfuse2` on Debian/Ubuntu). `fuse3` is not enough. Without it the AppImage exits with `error loading libfuse.so.2`; the installer below detects that and falls back to the runtime's self-extract mode so the app still starts, just a little slower.
 - To install it so `quickshelf` is on `PATH` for the keybinding, run the installer from a checkout of this repository:
 
   ```bash
-  chmod +x Quickshelf-0.1.0-x86_64.AppImage
-  ./scripts/install-appimage.sh ./Quickshelf-0.1.0-x86_64.AppImage
+  chmod +x Quickshelf-*-x86_64.AppImage
+  ./scripts/install-appimage.sh ./Quickshelf-*-x86_64.AppImage
   ```
 
-  It copies the AppImage to `~/.local/bin/quickshelf`, adds a desktop entry and icon under `~/.local/share`, and prints the Hyprland snippets below.
+  It installs a launcher at `~/.local/bin/quickshelf`, adds a desktop entry and icon under `~/.local/share`, and prints the Hyprland snippets below.
 - Nothing runs at login. Quickshelf starts only when you open it.
 
 ## Updates
