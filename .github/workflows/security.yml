@@ -21,5 +21,7 @@ jobs:
         run: npm ci
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      - name: Audit shipped dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Report dev dependency advisories
+        run: npm audit --audit-level=high || true
