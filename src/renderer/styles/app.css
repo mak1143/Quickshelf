@@ -6,6 +6,9 @@
   html,
   body {
     height: 100%;
+    /* The BrowserWindow is transparent so the shell's border radius shows
+     * the wallpaper in the corners. */
+    background: transparent;
   }
 
   body {

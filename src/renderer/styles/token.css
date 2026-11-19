@@ -59,6 +59,10 @@
 
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Icons",
     "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Radii. The window is frameless and transparent, so the shell draws its
+   * own rounded corners. */
+  --radius-window: 14px;
 }
 
 /* Dark: system preference, unless the user forced light. */
