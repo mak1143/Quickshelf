@@ -35,7 +35,7 @@ function renderTabs() {
         ? 'bg-[var(--color-fill-strong)] text-[var(--color-text)]'
         : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-fill)]',
     ].join(' ');
-    tabEl.title = `${tab.items.length} item${tab.items.length === 1 ? '' : 's'} — double-click to rename, × or right-click to delete`;
+    tabEl.dataset.tip = `${tab.items.length} item${tab.items.length === 1 ? '' : 's'} — double-click to rename, × or right-click to delete`;
     tabEl.setAttribute('role', 'tab');
     tabEl.setAttribute('aria-selected', String(tab.id === state.activeTabId));
     tabEl.tabIndex = 0;
@@ -56,7 +56,7 @@ function renderTabs() {
           : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100',
       ].join(' ');
       removeTab.textContent = '×';
-      removeTab.title = `Delete ${tab.name}`;
+      removeTab.dataset.tip = `Delete ${tab.name}`;
       removeTab.setAttribute('aria-label', `Delete ${tab.name}`);
       removeTab.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -94,7 +94,7 @@ function renderTabs() {
   addButton.className =
     'ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-[0.875rem] text-[var(--color-text-secondary)] hover:bg-[var(--color-fill)] hover:text-[var(--color-text)]';
   addButton.textContent = '+';
-  addButton.title = 'New shelf — or drop items here';
+  addButton.dataset.tip = 'New shelf — or drop items here';
   addButton.addEventListener('click', () => {
     void api.addTab().then(setState);
   });
@@ -155,7 +155,7 @@ function createItemElement(tab, item) {
     'group flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 outline-none hover:bg-[var(--color-fill)] focus-visible:bg-[var(--color-fill)] focus-visible:ring-1 focus-visible:ring-[var(--color-accent)]';
   li.draggable = true;
   li.tabIndex = 0;
-  li.title = item.path;
+  li.dataset.tip = item.path;
 
   li.addEventListener('dragstart', (event) => {
     event.preventDefault();
@@ -201,7 +201,7 @@ function createItemElement(tab, item) {
   remove.className =
     'ml-1 hidden h-6 w-6 shrink-0 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-fill-strong)] hover:text-[var(--color-text)] group-hover:flex group-focus-visible:flex';
   remove.textContent = '×';
-  remove.title = 'Remove from shelf';
+  remove.dataset.tip = 'Remove from shelf';
   remove.addEventListener('click', (event) => {
     event.stopPropagation();
     void api.removeItem({ tabId: tab.id, itemId: item.id }).then(setState);

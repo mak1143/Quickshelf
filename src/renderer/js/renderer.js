@@ -1,4 +1,5 @@
 import { initShelf } from './shelf.js';
+import { initTooltips } from './tooltip.js';
 
 const quitButton = document.getElementById('quit');
 
@@ -9,3 +10,4 @@ if (quitButton) {
 }
 
 initShelf();
+initTooltips();

@@ -12,9 +12,11 @@
   </head>
   <body class="text-[var(--color-text)] antialiased">
     <div
+      id="shell"
       class="flex h-screen flex-col overflow-hidden rounded-[var(--radius-window)] bg-[var(--color-bg)]"
     >
       <header
+        id="titlebar"
         class="flex items-center justify-between border-b border-[var(--color-divider)] px-4 py-3 select-none [-webkit-app-region:drag]"
       >
         <span class="text-sm font-semibold tracking-wide">Quickshelf</span>
@@ -41,6 +43,7 @@
           <p class="text-[0.8125rem] text-[var(--color-text-tertiary)]">Drop files, links, or text here</p>
         </div>
       </main>
+      <div id="tooltip" role="tooltip" aria-hidden="true" data-visible="false"></div>
     </div>
     <script src="./build/renderer.js"></script>
   </body>
