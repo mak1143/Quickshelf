@@ -39,3 +39,33 @@
     background: var(--color-scrollbar-thumb-hover);
   }
 }
+
+/* Tooltip -----------------------------------------------------------------
+ *
+ * Native `title` tooltips are OS-level popups that appear outside the window.
+ * Elements use `data-tip` instead and this fixed layer renders the text inside
+ * the shell; src/renderer/js/tooltip.js positions it and clamps it to bounds.
+ */
+@layer components {
+  #tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    max-width: min(17rem, calc(100vw - 12px));
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--color-tooltip-bg);
+    color: var(--color-tooltip-text);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 90ms var(--ease-out);
+  }
+
+  #tooltip[data-visible="true"] {
+    opacity: 1;
+  }
+}

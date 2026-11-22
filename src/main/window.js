@@ -25,6 +25,11 @@ function createWindow() {
     backgroundColor: '#00000000',
     hasShadow: false,
     resizable: true,
+    // Double-clicking the drag region of a frameless window would otherwise
+    // ask the compositor to maximise it; a small floating utility should not
+    // be maximised by accident.
+    maximizable: false,
+    fullscreenable: false,
     skipTaskbar: true,
     alwaysOnTop: true,
     title: 'Quickshelf',

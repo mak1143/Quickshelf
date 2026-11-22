@@ -17,6 +17,9 @@
   /* Radii */
   --radius-window: 14px;
 
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+
   /* Surfaces */
   --color-bg: hsl(0 0% 100%); /* pageBG */
   --color-bg-elevated: hsl(240 24% 96%); /* systemGray6 / opaqueShelfBG */
@@ -60,6 +63,10 @@
 
   --color-scrim: hsl(0 0% 0% / 45%); /* modalScrimColor */
 
+  /* Tooltips render inside the window, so they need solid colours. */
+  --color-tooltip-bg: hsl(0 0% 12%);
+  --color-tooltip-text: hsl(0 0% 100%);
+
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Icons",
     "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -96,6 +103,9 @@
     --gray-4: hsl(240 2% 23%);
     --gray-5: hsl(240 2% 18%);
     --gray-6: hsl(240 3% 11%);
+
+    --color-tooltip-bg: hsl(0 0% 92%);
+    --color-tooltip-text: hsl(0 0% 12%);
   }
 }
 
@@ -130,4 +140,7 @@
   --gray-4: hsl(240 2% 23%);
   --gray-5: hsl(240 2% 18%);
   --gray-6: hsl(240 3% 11%);
+
+  --color-tooltip-bg: hsl(0 0% 92%);
+  --color-tooltip-text: hsl(0 0% 12%);
 }
