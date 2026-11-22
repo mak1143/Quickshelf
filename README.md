@@ -9,7 +9,7 @@ A small, cross-platform desktop utility that combines a drag-and-drop shelf, a c
 - **Shelf:** drop files and folders onto the window, drag them out later. Stores links to the originals, so drops are instant and nothing is copied.
 - **Clipboard history:** text and images, searchable, with pinning. Default cap: 200 entries.
 - **Todo:** tasks with due dates, priorities (None, Low, Medium, High), and a "Today" filter.
-- **Window:** resizable. Free-floating by default, with an option to dock to a screen edge. Frameless; pinned across workspaces on Hyprland (no true always-on-top on Wayland).
+- **Window:** a small free-floating panel (3.5 × 2 in by default), resizable, frameless, and pinned across workspaces on Hyprland (no true always-on-top on Wayland).
 
 ## Stack
 

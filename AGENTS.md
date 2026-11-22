@@ -37,7 +37,7 @@ Quickshelf is a small, cross-platform desktop utility with three parts in one fl
 | Web content       | Browser drops: images as image files, links as `.url`, text as `.txt` in `userData/web/`. No network fetch; shelf "Open" uses `shell.openExternal`. Cap each item (for example 50 MB); removing an owned item deletes its file. |
 | Clipboard         | Text and images. History cap 200 (configurable)                                                                |
 | Todo              | Due dates, priorities (None / Low / Medium / High), "Today" filter                                             |
-| Window            | Resizable. Free-floating by default, with an option to dock to a screen edge. No true always-on-top on Wayland; Hyprland `float` + `pin`. |
+| Window            | Resizable, free-floating only: no edge docking and no collapse chevron. Default size 3.5 × 2 in = 441 × 252 compositor px (371 × 212 CSS px at the reference DPR). No true always-on-top on Wayland; Hyprland `float` + `pin`. |
 | Shortcut          | `SUPER+A` runs `quickshelf --toggle`                                                                           |
 | Component library | `basecoat-css`. Verify package name and version before installing                                              |
 | Auto-start        | None. Nothing registers to start at login                                                                      |
