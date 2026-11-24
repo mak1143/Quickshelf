@@ -97,9 +97,12 @@ export function initTooltips() {
   });
 
   // Keyboard users get the tooltip immediately, without the hover delay.
+  // Clicking a button or row also moves focus to it, so require :focus-visible
+  // to avoid popping a tooltip on every mouse click.
   document.addEventListener('focusin', (event) => {
     const anchor = event.target.closest?.('[data-tip]');
     if (!anchor) return;
+    if (!anchor.matches(':focus-visible')) return;
 
     activeAnchor = anchor;
     cancelTimer();
@@ -117,4 +120,11 @@ export function initTooltips() {
   window.addEventListener('resize', () => {
     if (activeAnchor) place(activeAnchor);
   });
+
+  // Re-renders replace tab and item nodes. `pointerout`/`focusout` are not
+  // guaranteed to fire when the anchor is removed, so clear a tooltip whose
+  // anchor has left the document.
+  new MutationObserver(() => {
+    if (activeAnchor && !activeAnchor.isConnected) hide();
+  }).observe(document.body, { childList: true, subtree: true });
 }
