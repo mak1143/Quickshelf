@@ -53,6 +53,9 @@
     left: 0;
     z-index: 50;
     max-width: min(17rem, calc(100vw - 12px));
+    /* Never let a very long value (for example a deep file path) grow past
+     * the shell; `position: fixed` is not clipped by the shell's overflow. */
+    max-height: calc(100vh - 12px);
     padding: 4px 8px;
     border-radius: 6px;
     background: var(--color-tooltip-bg);
@@ -60,6 +63,7 @@
     font-size: 0.6875rem;
     line-height: 1.35;
     overflow-wrap: anywhere;
+    overflow: hidden;
     pointer-events: none;
     opacity: 0;
     transition: opacity 90ms var(--ease-out);
