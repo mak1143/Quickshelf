@@ -14,9 +14,6 @@
  */
 
 :root {
-  /* Radii */
-  --radius-window: 14px;
-
   /* Motion */
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
 
