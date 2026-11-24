@@ -202,6 +202,7 @@ function createItemElement(tab, item) {
     'ml-1 hidden h-6 w-6 shrink-0 items-center justify-center rounded text-[var(--color-text-secondary)] hover:bg-[var(--color-fill-strong)] hover:text-[var(--color-text)] group-hover:flex group-focus-visible:flex';
   remove.textContent = '×';
   remove.dataset.tip = 'Remove from shelf';
+  remove.setAttribute('aria-label', `Remove ${item.name} from shelf`);
   remove.addEventListener('click', (event) => {
     event.stopPropagation();
     void api.removeItem({ tabId: tab.id, itemId: item.id }).then(setState);
